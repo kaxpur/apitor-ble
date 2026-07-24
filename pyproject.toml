@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "apitor-ble"
+version = "0.1.0"
+description = "Async BLE library to drive Apitor toy robots (Robot J and friends)."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "Reverse-engineered from the Apitor Kit app" }]
+keywords = ["apitor", "bluetooth", "ble", "robot", "bleak"]
+dependencies = ["bleak>=0.21.0"]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0"]
+
+[project.scripts]
+apitor-ble = "main:main"
+
+[tool.setuptools]
+packages = ["apitor_ble"]
+py-modules = ["main"]
