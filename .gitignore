@@ -8,4 +8,18 @@ dist/
 venv/
 .pytest_cache/
 .mypy_cache/
+.ruff_cache/
 *.log
+
+# Coverage / test artifacts
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+
+# Editors / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
