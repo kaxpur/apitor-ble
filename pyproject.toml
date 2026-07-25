@@ -4,21 +4,63 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "apitor-ble"
-version = "0.1.0"
-description = "Async BLE library to drive Apitor toy robots (Robot J and friends)."
+version = "0.2.0"
+description = "Async BLE library to drive Apitor toy robots (Robot J and friends), with a beginner-friendly API."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
 authors = [{ name = "Karissa Mears" }]
-keywords = ["apitor", "bluetooth", "ble", "robot", "bleak"]
+keywords = ["apitor", "bluetooth", "ble", "robot", "robotics", "bleak", "education", "stem"]
 dependencies = ["bleak>=0.21.0"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Education",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: System :: Hardware :: Hardware Drivers",
+    "Typing :: Typed",
+]
+
+[project.urls]
+Homepage = "https://github.com/kaxpur/apitor-ble"
+Repository = "https://github.com/kaxpur/apitor-ble"
+Documentation = "https://github.com/kaxpur/apitor-ble/tree/main/docs"
+Issues = "https://github.com/kaxpur/apitor-ble/issues"
+Changelog = "https://github.com/kaxpur/apitor-ble/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
-dev = ["pytest>=7.0"]
+dev = ["pytest>=7.0", "ruff>=0.5", "black>=24.0"]
 
 [project.scripts]
-apitor-ble = "main:main"
+apitor = "apitor_ble.cli:main"
+apitor-ble = "apitor_ble.cli:main"
 
 [tool.setuptools]
 packages = ["apitor_ble"]
 py-modules = ["main"]
+
+[tool.setuptools.package-data]
+apitor_ble = ["py.typed"]
+
+[tool.black]
+line-length = 100
+target-version = ["py310"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = ["B008"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

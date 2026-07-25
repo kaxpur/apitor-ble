@@ -19,12 +19,18 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from typing import Awaitable, Callable, Optional
+from collections.abc import Callable
 
 from bleak import BleakClient, BleakScanner
 from bleak.backends.device import BLEDevice
 
 from . import protocol as p
+from .exceptions import (
+    ApitorError,
+    AuthorizationError,
+    ConnectionError,
+    DiscoveryError,
+)
 from .protocol import Color, Direction, Motor
 from .sensor import SensorFrame, decode_notification
 
@@ -33,9 +39,13 @@ log = logging.getLogger("apitor_ble")
 NotifyCallback = Callable[[bytes], None]
 SensorCallback = Callable[[SensorFrame], None]
 
-
-class ApitorError(RuntimeError):
-    """Raised for connection / protocol level failures."""
+__all__ = [
+    "ApitorRobot",
+    "ApitorError",
+    "AuthorizationError",
+    "ConnectionError",
+    "DiscoveryError",
+]
 
 
 class ApitorRobot:
@@ -56,19 +66,19 @@ class ApitorRobot:
 
     def __init__(
         self,
-        address: Optional[str] = None,
+        address: str | None = None,
         product: str = "j",
-        device: Optional[BLEDevice] = None,
+        device: BLEDevice | None = None,
     ) -> None:
         if device is None and address is None:
             raise ValueError("Provide either an address, a device, or use discover().")
         self.product = product.lower().strip()
         self._device = device
         self._address = device.address if device is not None else address
-        self._client: Optional[BleakClient] = None
-        self._notify_cb: Optional[NotifyCallback] = None
-        self._sensor_cb: Optional[SensorCallback] = None
-        self._last_low_power: Optional[bool] = None
+        self._client: BleakClient | None = None
+        self._notify_cb: NotifyCallback | None = None
+        self._sensor_cb: SensorCallback | None = None
+        self._last_low_power: bool | None = None
         # Serializes writes so we never overlap GATT operations.
         self._write_lock = asyncio.Lock()
 
@@ -86,21 +96,22 @@ class ApitorRobot:
         log.info("Scanning %.1fs for Apitor '%s' devices...", timeout, product)
         found = await BleakScanner.discover(timeout=timeout, service_uuids=[p.UUID_SERVICE])
         matches = [d for d in found if p.device_name_matches(d.name, product)]
-        log.info("Found %d matching device(s): %s", len(matches),
-                 [f"{d.name} ({d.address})" for d in matches])
+        log.info(
+            "Found %d matching device(s): %s",
+            len(matches),
+            [f"{d.name} ({d.address})" for d in matches],
+        )
         return matches
 
     @classmethod
-    async def discover(
-        cls, product: str = "j", timeout: float = 10.0
-    ) -> "ApitorRobot":
+    async def discover(cls, product: str = "j", timeout: float = 10.0) -> ApitorRobot:
         """Scan and return an :class:`ApitorRobot` bound to the first match.
 
         Raises :class:`ApitorError` if nothing matching is found.
         """
         matches = await cls.scan(product=product, timeout=timeout)
         if not matches:
-            raise ApitorError(
+            raise DiscoveryError(
                 f"No Apitor '{product}' robot found. Is it powered on and in range?"
             )
         return cls(device=matches[0], product=product)
@@ -112,33 +123,51 @@ class ApitorRobot:
     def is_connected(self) -> bool:
         return self._client is not None and self._client.is_connected
 
-    def on_notify(self, callback: Optional[NotifyCallback]) -> None:
+    def on_notify(self, callback: NotifyCallback | None) -> None:
         """Register a callback for raw notification frames from the robot."""
         self._notify_cb = callback
 
-    def on_sensor(self, callback: Optional[SensorCallback]) -> None:
+    def on_sensor(self, callback: SensorCallback | None) -> None:
         """Register a callback for decoded :class:`SensorFrame` notifications."""
         self._sensor_cb = callback
 
     @property
-    def low_power(self) -> Optional[bool]:
+    def low_power(self) -> bool | None:
         """Last known low-battery state, or None if no sensor frame seen yet."""
         return self._last_low_power
 
     async def connect(self) -> None:
-        """Connect, subscribe to notifications, and send the auth handshake."""
+        """Connect, subscribe to notifications, and send the auth handshake.
+
+        Raises
+        ------
+        ConnectionError
+            If the BLE link cannot be established.
+        AuthorizationError
+            If the authorization handshake could not be sent.
+        """
         if self.is_connected:
             return
         target = self._device if self._device is not None else self._address
         log.info("Connecting to %s ...", self._address)
         self._client = BleakClient(target)
-        await self._client.connect()
+        try:
+            await self._client.connect()
+        except Exception as exc:  # noqa: BLE001 - normalize any bleak error
+            self._client = None
+            raise ConnectionError(f"Failed to connect to {self._address}: {exc}") from exc
         if not self._client.is_connected:
-            raise ApitorError(f"Failed to connect to {self._address}")
+            self._client = None
+            raise ConnectionError(f"Failed to connect to {self._address}")
 
         await self._client.start_notify(p.UUID_NOTIFY, self._handle_notify)
         # Authorize BEFORE any command, or the robot silently ignores everything.
-        await self.authorize()
+        try:
+            await self.authorize()
+        except Exception as exc:  # noqa: BLE001 - normalize any bleak error
+            raise AuthorizationError(
+                f"Authorization handshake failed for product '{self.product}': {exc}"
+            ) from exc
         log.info("Connected and authorized (%s).", self.product)
 
     async def disconnect(self) -> None:
@@ -155,7 +184,7 @@ class ApitorRobot:
         finally:
             self._client = None
 
-    async def __aenter__(self) -> "ApitorRobot":
+    async def __aenter__(self) -> ApitorRobot:
         await self.connect()
         return self
 
@@ -171,7 +200,7 @@ class ApitorRobot:
         This is the single choke-point every higher-level command goes through.
         """
         if not self.is_connected:
-            raise ApitorError("Not connected.")
+            raise ConnectionError("Not connected.")
         async with self._write_lock:
             for chunk in p.chunk_write(data):
                 await self._client.write_gatt_char(p.UUID_WRITE, chunk, response=response)
@@ -194,9 +223,7 @@ class ApitorRobot:
     # ------------------------------------------------------------------ #
     # High-level robot API
     # ------------------------------------------------------------------ #
-    async def run_motor(
-        self, motor: Motor | int, direction: Direction | int, speed: int
-    ) -> None:
+    async def run_motor(self, motor: Motor | int, direction: Direction | int, speed: int) -> None:
         """Drive one motor. ``speed`` is 0-12 (matches the app's S1-S12)."""
         await self.send_raw(p.motor_command(int(motor), int(direction), int(speed)))
 

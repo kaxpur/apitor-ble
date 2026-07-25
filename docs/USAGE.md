@@ -128,18 +128,22 @@ The `apitor_ble.protocol` module also exposes pure frame-builders with no I/O:
 `auth_frame`, `motor_command`, `stop_all_command`, `led_command`,
 `device_name_matches`, `chunk_write`.
 
-## Test harness (`main.py`)
+## Command-line tool (`apitor`)
+
+Installing the package provides an `apitor` console command:
 
 ```bash
-python main.py scan                  # list nearby Robot J devices
-python main.py demo                  # motors + LED sequence
-python main.py listen                # print incoming notification frames
-python main.py drive                 # keyboard control (type key + Enter)
+apitor scan                  # list nearby Robot J devices
+apitor demo                  # motors + LED sequence
+apitor listen                # print incoming notification frames
+apitor drive                 # keyboard control (type key + Enter)
 
-python main.py demo --address AA:BB:CC:DD:EE:FF   # skip scanning
-python main.py scan --product s      # a different Apitor product
-python main.py demo --verbose        # log raw TX/RX frames
+apitor demo --address AA:BB:CC:DD:EE:FF   # skip scanning
+apitor scan --product s      # a different Apitor product
+apitor demo --verbose        # log raw TX/RX frames
 ```
+
+The older `python main.py <command>` form still works and is equivalent.
 
 ## Troubleshooting
 

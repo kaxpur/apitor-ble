@@ -44,11 +44,14 @@ from __future__ import annotations
 
 import asyncio
 import threading
-from typing import Optional
+from collections.abc import Awaitable
+from typing import TypeVar
 
 from . import profiles
 from .profiles import RobotProfile, drive_directions, motor_from_number
 from .protocol import Color, Direction, Motor
+
+_T = TypeVar("_T")
 
 # ---- pure helpers (no robot needed — easy to test) ------------------------- #
 
@@ -131,13 +134,13 @@ class Robot:
     def __init__(
         self,
         product: str = "j",
-        address: Optional[str] = None,
+        address: str | None = None,
         *,
-        left_motor: Optional[int] = None,
-        right_motor: Optional[int] = None,
+        left_motor: int | None = None,
+        right_motor: int | None = None,
         flip_left: bool = False,
         flip_right: bool = False,
-        profile: Optional[RobotProfile] = None,
+        profile: RobotProfile | None = None,
         quiet: bool = False,
     ) -> None:
         base = profile if profile is not None else profiles.get_profile(product)
@@ -158,6 +161,13 @@ class Robot:
 
     # -- internal plumbing --------------------------------------------------- #
     def _say(self, message: str) -> None:
+        """Print a friendly status message to the beginner.
+
+        This is the *only* place the library writes to stdout, and it is a
+        deliberate feature of the ``easy`` layer (not debug output). Silence it
+        with ``Robot(quiet=True)``. Everything else in the library uses
+        :mod:`logging`.
+        """
         if self._quiet:
             return
         # Some terminals (e.g. the default Windows console) can't print every
@@ -167,18 +177,16 @@ class Robot:
         except UnicodeEncodeError:
             print(message.encode("ascii", "replace").decode("ascii"))
 
-    def _run(self, coro):
+    def _run(self, coro: Awaitable[_T]) -> _T:
         """Run one async job on the background helper and wait for it to finish."""
         return asyncio.run_coroutine_threadsafe(coro, self._loop).result()
 
     def _require_connection(self) -> None:
         if self._robot is None:
-            raise RuntimeError(
-                "The robot isn't connected yet. Call robot.connect() first."
-            )
+            raise RuntimeError("The robot isn't connected yet. Call robot.connect() first.")
 
     # -- connecting ---------------------------------------------------------- #
-    def connect(self, timeout: float = 10.0) -> "Robot":
+    def connect(self, timeout: float = 10.0) -> Robot:
         """Find the robot and connect to it. Do this before anything else."""
         # Imported here so the pure helpers above work even without bleak.
         from .robot import ApitorError, ApitorRobot
@@ -192,18 +200,14 @@ class Robot:
             if self._address:
                 robot = ApitorRobot(address=self._address, product=self._profile.product)
             else:
-                robot = await ApitorRobot.discover(
-                    product=self._profile.product, timeout=timeout
-                )
+                robot = await ApitorRobot.discover(product=self._profile.product, timeout=timeout)
             await robot.connect()
             return robot
 
         try:
             self._robot = self._run(_do_connect())
         except ApitorError as exc:
-            raise RuntimeError(
-                "I couldn't find your robot. Is it turned on and nearby?"
-            ) from exc
+            raise RuntimeError("I couldn't find your robot. Is it turned on and nearby?") from exc
         self._say("Connected! Your robot is ready.")
         if not self._profile.calibrated:
             self._say(
@@ -224,7 +228,7 @@ class Robot:
         self._loop.call_soon_threadsafe(self._loop.stop)
 
     # Let people write:  with Robot() as robot: ...
-    def __enter__(self) -> "Robot":
+    def __enter__(self) -> Robot:
         return self.connect()
 
     def __exit__(self, *exc) -> None:
@@ -232,8 +236,11 @@ class Robot:
 
     # -- moving -------------------------------------------------------------- #
     def motor(
-        self, number: int, direction: str = "forward", speed: int = 5,
-        seconds: Optional[float] = None,
+        self,
+        number: int,
+        direction: str = "forward",
+        speed: int = 5,
+        seconds: float | None = None,
     ) -> None:
         """Turn one motor (``number`` is 1, 2, or 3).
 
@@ -248,8 +255,9 @@ class Robot:
             self.wait(seconds)
             self._run(self._robot.stop_motor(port))
 
-    def _drive(self, forward_left: bool, forward_right: bool,
-               seconds: Optional[float], speed: int) -> None:
+    def _drive(
+        self, forward_left: bool, forward_right: bool, seconds: float | None, speed: int
+    ) -> None:
         """Run the two wheel motors together (used by forward/back/turns)."""
         self._require_connection()
         spd = _clamp_speed(speed)
@@ -262,19 +270,19 @@ class Robot:
             self.wait(seconds)
             self.stop()
 
-    def forward(self, seconds: Optional[float] = None, speed: int = 5) -> None:
+    def forward(self, seconds: float | None = None, speed: int = 5) -> None:
         """Drive forward. Add ``seconds`` to go for a while then stop."""
         self._drive(True, True, seconds, speed)
 
-    def backward(self, seconds: Optional[float] = None, speed: int = 5) -> None:
+    def backward(self, seconds: float | None = None, speed: int = 5) -> None:
         """Drive backward."""
         self._drive(False, False, seconds, speed)
 
-    def turn_left(self, seconds: Optional[float] = None, speed: int = 5) -> None:
+    def turn_left(self, seconds: float | None = None, speed: int = 5) -> None:
         """Spin to the left."""
         self._drive(False, True, seconds, speed)
 
-    def turn_right(self, seconds: Optional[float] = None, speed: int = 5) -> None:
+    def turn_right(self, seconds: float | None = None, speed: int = 5) -> None:
         """Spin to the right."""
         self._drive(True, False, seconds, speed)
 

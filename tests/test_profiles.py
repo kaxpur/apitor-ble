@@ -4,11 +4,12 @@ These lock in the motor mappings taken from the official app so a refactor can't
 silently break "forward is forward".
 """
 
+from dataclasses import FrozenInstanceError
+
 import pytest
 
 from apitor_ble.profiles import (
     PROFILES,
-    RobotProfile,
     drive_directions,
     get_profile,
     motor_from_number,
@@ -33,7 +34,7 @@ def test_motor_from_number():
 
 def test_get_profile_known_and_unknown():
     assert get_profile("j").product == "j"
-    assert get_profile("J").product == "j"          # case-insensitive
+    assert get_profile("J").product == "j"  # case-insensitive
     with pytest.raises(ValueError, match="Supported robots"):
         get_profile("z")
 
@@ -87,5 +88,5 @@ def test_swap_motors_via_overrides():
 
 def test_profile_is_immutable():
     p = get_profile("j")
-    with pytest.raises(Exception):
+    with pytest.raises(FrozenInstanceError):
         p.left_motor = Motor.M3  # frozen dataclass

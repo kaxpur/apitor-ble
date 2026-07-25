@@ -76,7 +76,7 @@ class RobotProfile:
         right_motor: int | None = None,
         flip_left: bool = False,
         flip_right: bool = False,
-    ) -> "RobotProfile":
+    ) -> RobotProfile:
         """Return a copy adjusted for a specific build.
 
         ``left_motor``/``right_motor`` reassign the wheels (motor numbers 1-3);
@@ -133,37 +133,55 @@ def drive_directions(
 PROFILES: dict[str, RobotProfile] = {
     # forward = M1:D2, M2:D1  (turn-right spins both D1)
     "j": RobotProfile(
-        "j", "Robot J",
-        left_motor=Motor.M2, left_forward=Direction.D1,
-        right_motor=Motor.M1, right_forward=Direction.D2,
+        "j",
+        "Robot J",
+        left_motor=Motor.M2,
+        left_forward=Direction.D1,
+        right_motor=Motor.M1,
+        right_forward=Direction.D2,
         calibrated=True,
     ),
     # forward = M1:D2, M2:D1  (turn-right keeps M1 at D2)
     "s": RobotProfile(
-        "s", "Robot S",
-        left_motor=Motor.M1, left_forward=Direction.D2,
-        right_motor=Motor.M2, right_forward=Direction.D1,
+        "s",
+        "Robot S",
+        left_motor=Motor.M1,
+        left_forward=Direction.D2,
+        right_motor=Motor.M2,
+        right_forward=Direction.D1,
     ),
     "q": RobotProfile(
-        "q", "Robot Q",
-        left_motor=Motor.M1, left_forward=Direction.D2,
-        right_motor=Motor.M2, right_forward=Direction.D1,
+        "q",
+        "Robot Q",
+        left_motor=Motor.M1,
+        left_forward=Direction.D2,
+        right_motor=Motor.M2,
+        right_forward=Direction.D1,
     ),
     # forward = M1:D1, M2:D2
     "r": RobotProfile(
-        "r", "Robot R",
-        left_motor=Motor.M1, left_forward=Direction.D1,
-        right_motor=Motor.M2, right_forward=Direction.D2,
+        "r",
+        "Robot R",
+        left_motor=Motor.M1,
+        left_forward=Direction.D1,
+        right_motor=Motor.M2,
+        right_forward=Direction.D2,
     ),
     "x": RobotProfile(
-        "x", "Robot X",
-        left_motor=Motor.M1, left_forward=Direction.D2,
-        right_motor=Motor.M2, right_forward=Direction.D1,
+        "x",
+        "Robot X",
+        left_motor=Motor.M1,
+        left_forward=Direction.D2,
+        right_motor=Motor.M2,
+        right_forward=Direction.D1,
     ),
     "w": RobotProfile(
-        "w", "Wheels",
-        left_motor=Motor.M1, left_forward=Direction.D2,
-        right_motor=Motor.M2, right_forward=Direction.D1,
+        "w",
+        "Wheels",
+        left_motor=Motor.M1,
+        left_forward=Direction.D2,
+        right_motor=Motor.M2,
+        right_forward=Direction.D1,
     ),
 }
 
@@ -173,7 +191,5 @@ def get_profile(product: str) -> RobotProfile:
     key = str(product).strip().lower()
     if key not in PROFILES:
         supported = ", ".join(f"'{k}' ({v.name})" for k, v in PROFILES.items())
-        raise ValueError(
-            f"I don't have a robot called '{product}'. Supported robots: {supported}."
-        )
+        raise ValueError(f"I don't have a robot called '{product}'. Supported robots: {supported}.")
     return PROFILES[key]

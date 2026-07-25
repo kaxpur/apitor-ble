@@ -3,31 +3,29 @@
 Everything in this module is pure data / byte-building with no I/O, so it can be
 unit-tested and reused independently of the BLE transport in ``robot.py``.
 
-Reverse-engineered from the official "Apitor Kit" Android app
-(``com.robot.apitor``, class ``com.robot.apitor.robot.Robot``). See
-``docs/PROTOCOL.md`` for the full write-up.
+The raw numeric values live in :mod:`apitor_ble.constants`; this module gives
+them protocol meaning (enums and frame builders). Reverse-engineered from the
+official "Apitor Kit" Android app (``com.robot.apitor``, class
+``com.robot.apitor.robot.Robot``). See ``docs/PROTOCOL.md`` for the full
+write-up.
 """
 
 from __future__ import annotations
 
 from enum import IntEnum
 
+from . import constants as c
+from .exceptions import ProtocolError
+
 # --------------------------------------------------------------------------- #
-# GATT profile (identical across all Apitor products)
+# GATT profile / transport (re-exported from constants for a stable public API)
 # --------------------------------------------------------------------------- #
-# Nordic-style UART service. The 16-bit shortcuts are 0xF0FF / 0xF001 / 0xF002.
-UUID_SERVICE = "0000f0ff-0000-1000-8000-00805f9b34fb"
-UUID_WRITE = "0000f001-0000-1000-8000-00805f9b34fb"  # phone -> robot
-UUID_NOTIFY = "0000f002-0000-1000-8000-00805f9b34fb"  # robot -> phone
-
-# The app splits every GATT write into <=20 byte chunks (setSplitWriteNum(20)).
-MAX_WRITE_CHUNK = 20
-
-# The app throttles outgoing commands to one per ~500 ms (CMD_INTERVAL_MS).
-COMMAND_INTERVAL_S = 0.5
-
-# Advertised name prefix: "apitort" + product letter, matched case-insensitively.
-NAME_PREFIX = "apitort"
+UUID_SERVICE = c.UUID_SERVICE
+UUID_WRITE = c.UUID_WRITE
+UUID_NOTIFY = c.UUID_NOTIFY
+MAX_WRITE_CHUNK = c.MAX_WRITE_CHUNK
+COMMAND_INTERVAL_S = c.COMMAND_INTERVAL_S
+NAME_PREFIX = c.NAME_PREFIX
 
 
 # --------------------------------------------------------------------------- #
@@ -52,41 +50,43 @@ DEFAULT_KEY = PRODUCT_KEYS["x"]
 
 
 # --------------------------------------------------------------------------- #
-# Command frame headers
+# Command frame headers (2-byte framing + 1-byte command)
 # --------------------------------------------------------------------------- #
-HEADER_MOTOR = bytes.fromhex("55AA03")
-HEADER_LED = bytes.fromhex("55AA04")
-HEADER_SENSOR = bytes.fromhex("55AA0580")
+HEADER_MOTOR = c.FRAME_HEADER + bytes((c.CMD_MOTOR,))
+HEADER_LED = c.FRAME_HEADER + bytes((c.CMD_LED,))
+HEADER_SENSOR = c.FRAME_HEADER + bytes((c.CMD_SENSOR, c.SENSOR_MODE))
 
 
 class Motor(IntEnum):
     """Motor port index used in motor commands."""
 
-    M1 = 6
-    M2 = 7
-    M3 = 8
-    ALL = 9
-    STOP_ALL = 16  # 0x10, only meaningful with direction=STOP, speed=0
+    M1 = c.MOTOR_M1
+    M2 = c.MOTOR_M2
+    M3 = c.MOTOR_M3
+    ALL = c.MOTOR_ALL
+    STOP_ALL = c.MOTOR_STOP_ALL  # 0x10, only meaningful with direction=STOP, speed=0
 
 
 class Direction(IntEnum):
-    STOP = 0
-    D1 = 1  # one way
-    D2 = 2  # the other way
+    """Motor spin direction."""
+
+    STOP = c.DIR_STOP
+    D1 = c.DIR_D1  # one way
+    D2 = c.DIR_D2  # the other way
 
 
 class Color(IntEnum):
     """LED colors (values match the app's getColor mapping)."""
 
-    OFF = 0
-    RED = 1
-    ORANGE = 2
-    YELLOW = 3
-    GREEN = 4
-    CYAN = 5
-    BLUE = 6
-    PURPLE = 7
-    WHITE = 10
+    OFF = c.COLOR_OFF
+    RED = c.COLOR_RED
+    ORANGE = c.COLOR_ORANGE
+    YELLOW = c.COLOR_YELLOW
+    GREEN = c.COLOR_GREEN
+    CYAN = c.COLOR_CYAN
+    BLUE = c.COLOR_BLUE
+    PURPLE = c.COLOR_PURPLE
+    WHITE = c.COLOR_WHITE
 
 
 def _byte(value: int) -> int:
@@ -108,9 +108,10 @@ def motor_command(motor: int, direction: int, speed: int) -> bytes:
     """Build a motor command: ``55 AA 03 <motor> <direction> <speed>``.
 
     ``speed`` is 0-12 in the app's UI (S1-S12); higher values are accepted by
-    the frame but not exposed by the app.
+    the frame but not exposed by the app. Values are masked into a single byte,
+    matching the app's ``(byte)`` casts.
     """
-    return HEADER_MOTOR + bytes([_byte(motor), _byte(direction), _byte(speed)])
+    return HEADER_MOTOR + bytes((_byte(motor), _byte(direction), _byte(speed)))
 
 
 def stop_all_command() -> bytes:
@@ -124,11 +125,11 @@ def led_command(index: int, color: int) -> bytes:
     ``index`` selects which LED (1, 2, ...); the app uses index 4 as an
     "all LEDs" shortcut. Two trailing zero bytes are always appended.
     """
-    return HEADER_LED + bytes([_byte(index), _byte(color), 0x00, 0x00])
+    return HEADER_LED + bytes((_byte(index), _byte(color), 0x00, 0x00))
 
 
 def device_name_matches(name: str | None, product: str) -> bool:
-    """Return True if an advertised ``name`` belongs to the given product.
+    """Return ``True`` if an advertised ``name`` belongs to the given product.
 
     Mirrors ``Robot.isApitorDevice``: name starts with ``"apitort" + product``,
     compared case-insensitively after trimming.
@@ -140,5 +141,11 @@ def device_name_matches(name: str | None, product: str) -> bool:
 
 
 def chunk_write(data: bytes, size: int = MAX_WRITE_CHUNK) -> list[bytes]:
-    """Split ``data`` into <=``size`` byte chunks, matching setSplitWriteNum(20)."""
+    """Split ``data`` into ``<=size`` byte chunks, matching setSplitWriteNum(20).
+
+    Raises :class:`~apitor_ble.exceptions.ProtocolError` if ``size`` is not
+    positive.
+    """
+    if size <= 0:
+        raise ProtocolError(f"chunk size must be positive, got {size}")
     return [data[i : i + size] for i in range(0, len(data), size)] or [b""]

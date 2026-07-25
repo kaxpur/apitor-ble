@@ -15,13 +15,13 @@ robot = Robot()
 robot.connect()
 
 # 2. Drive around.
-robot.forward(2)      # go forward for 2 seconds
-robot.turn_right(1)   # turn right for 1 second
-robot.backward(2)     # go backward for 2 seconds
+robot.forward(2)  # go forward for 2 seconds
+robot.turn_right(1)  # turn right for 1 second
+robot.backward(2)  # go backward for 2 seconds
 
 # 3. Play with the lights.
 robot.color("red")
-robot.wait(1)         # wait 1 second
+robot.wait(1)  # wait 1 second
 robot.color("green")
 robot.wait(1)
 robot.color("blue")

@@ -7,13 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-07-25
+
+Packaging, tooling, and code-quality pass to make the project PyPI-ready. No
+breaking API changes.
+
 ### Added
-- README: badges, "Why?", "Demo" (placeholders), "Roadmap", and "Disclaimer"
-  sections, plus an expanded install/requirements and contributing list.
+- **Console entry point**: installs an `apitor` command (`apitor scan|demo|
+  listen|drive`) via `console_scripts`. `python main.py <command>` still works.
+- **`apitor_ble.constants`**: all wire values as named constants (no more magic
+  numbers like `0x55` / `0x03` scattered through the code).
+- **`apitor_ble.exceptions`**: `ApitorError` base plus `DiscoveryError`,
+  `ConnectionError`, `AuthorizationError`, and `ProtocolError`; the driver now
+  raises the specific type (all still catchable as `ApitorError`).
+- **GitHub Actions CI** running Ruff, Black, and pytest on Python 3.10-3.13.
+- **PEP 561 typing marker** (`py.typed`) — the package ships as typed.
+- More example programs: `drive_square`, `rainbow`, `police_lights`,
+  `keyboard_drive`, `joystick`, `autonomous_demo`, plus an examples index.
+- Packet diagrams in `docs/PROTOCOL.md` showing the meaning of every byte.
+- Complete package metadata in `pyproject.toml`: classifiers, project URLs.
+- README: badges, "Why?", "Demo" (placeholders), "Roadmap", and "Disclaimer".
+- Tests for the constants, exceptions, and CLI parsing (54 tests total).
 
 ### Changed
 - Require Python 3.10+ (was 3.9+), consistent across README, `pyproject.toml`,
   and `docs/USAGE.md`.
+- `protocol.py` and `sensor.py` now build every frame from `constants.py`.
+- The CLI owns all user-facing terminal output; core library modules use
+  `logging` only. (The beginner `easy` layer still prints friendly messages by
+  design, silenceable with `Robot(quiet=True)`.)
+- Codebase formatted with Black and linted with Ruff.
 
 ## [0.1.0] - 2026-07-25
 
@@ -49,5 +72,6 @@ First public release.
 - Unofficial project; not affiliated with or endorsed by Apitor. The protocol
   was reverse-engineered for interoperability with hardware you own.
 
-[Unreleased]: https://github.com/kaxpur/apitor-ble/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/kaxpur/apitor-ble/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/kaxpur/apitor-ble/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/kaxpur/apitor-ble/releases/tag/v0.1.0

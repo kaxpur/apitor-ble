@@ -1,12 +1,14 @@
 # apitor-ble
 
+[![CI](https://github.com/kaxpur/apitor-ble/actions/workflows/ci.yml/badge.svg)](https://github.com/kaxpur/apitor-ble/actions/workflows/ci.yml)
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)
 ![Bluetooth LE](https://img.shields.io/badge/Bluetooth-LE-0082FC.svg?logo=bluetooth&logoColor=white)
-![Tests](https://img.shields.io/badge/tests-passing-brightgreen.svg)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Ruff](https://img.shields.io/badge/linter-ruff-D7FF64.svg)](https://github.com/astral-sh/ruff)
 
 A small, dependency-light Python library for driving **Apitor** toy robots over
-Bluetooth Low Energy — primarily **Robot J** — plus a test/demo CLI and full
+Bluetooth Low Energy — hardware tested using **Robot J** — plus a test/demo CLI and full
 protocol documentation.
 
 The protocol was reverse-engineered from the official *Apitor Kit* Android app.
@@ -106,12 +108,20 @@ A fuller example is in [`examples/use_in_another_project.py`](examples/use_in_an
 
 ## Try it from the command line
 
+Installing the package provides an `apitor` command:
+
 ```bash
-python main.py scan        # find nearby Robot J devices
-python main.py demo        # connect and run a motor + LED routine
-python main.py listen      # print incoming notification frames
-python main.py drive       # keyboard-driven live control
+apitor scan        # find nearby Robot J devices
+apitor demo        # connect and run a motor + LED routine
+apitor listen      # print incoming notification frames
+apitor drive       # keyboard-driven live control
+
+apitor demo --address AA:BB:CC:DD:EE:FF   # skip scanning
+apitor scan --product s                   # a different Apitor product
+apitor demo --verbose                     # log raw TX/RX frames
 ```
+
+(The older `python main.py <command>` invocation still works too.)
 
 ## How it fits together
 

@@ -17,10 +17,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import IntEnum
-from typing import Optional
+
+from . import constants as c
 
 # Header that marks a standard sensor/telemetry frame (matches HEADER_SENSOR).
-SENSOR_PREFIX = "55aa0580"
+SENSOR_PREFIX = bytes((c.FRAME_HEADER_0, c.FRAME_HEADER_1, c.CMD_SENSOR, c.SENSOR_MODE)).hex()
 
 
 class FrameKind(IntEnum):
@@ -48,9 +49,9 @@ class SensorFrame:
     raw: bytes
     kind: FrameKind = FrameKind.UNKNOWN
     low_power: bool = False
-    wheel_distance: Optional[int] = None
-    order_buffer_size: Optional[int] = None
-    order_action_end: Optional[bool] = None
+    wheel_distance: int | None = None
+    order_buffer_size: int | None = None
+    order_action_end: bool | None = None
 
     @property
     def hex(self) -> str:
@@ -96,7 +97,7 @@ def decode_notification(raw: bytes) -> SensorFrame:
         return SensorFrame(
             raw=data,
             kind=FrameKind.SENSOR,
-            low_power=_b(data, 7) == 2,
+            low_power=_b(data, c.SENSOR_LOW_BATTERY_INDEX) == c.SENSOR_LOW_BATTERY_VALUE,
         )
 
     if _is_wheels_frame(data):
@@ -123,4 +124,11 @@ def _is_wheels_frame(data: bytes) -> bool:
     ``55 AA ..`` framing that is not the standard sensor header. This is only
     relevant for the Wheels product, never Robot J.
     """
-    return len(data) >= 9 and data[0] == 0x55 and data[1] == 0xAA and not data.hex().lower().startswith(SENSOR_PREFIX) and data[2] in (0x03, 0x02)
+    if len(data) < 9:
+        return False
+    if data[0] != c.FRAME_HEADER_0 or data[1] != c.FRAME_HEADER_1:
+        return False
+    if data.hex().lower().startswith(SENSOR_PREFIX):
+        return False
+    # Wheels motion frames carry a motor-style command byte (0x03) or 0x02.
+    return data[2] in (c.CMD_MOTOR, 0x02)

@@ -77,10 +77,15 @@ If the auth frame is not sent, the robot silently ignores all commands.
 A fixed 20-byte frame written once, right after connecting. Layout:
 
 ```
-55 AA 11 20 | <16 ASCII key bytes>
+55 AA 11 20 43 6E 35 ... 7A   (Robot J)
+│  │  │  │  └──────────────── 16 ASCII key bytes ("Cn5AtgZLJvqr8cDz")
+│  │  │  └─────────────────── auth mode (20 = standard, 80 = Wheels)
+│  │  └────────────────────── command (0x11 = authorize)
+│  └───────────────────────── header byte 1
+└──────────────────────────── header byte 0
 ```
 
-(Wheels uses header `55 AA 11 80` instead of `55 AA 11 20`.)
+(Wheels uses auth mode `80`, i.e. header `55 AA 11 80`, instead of `55 AA 11 20`.)
 
 | Product | Full frame (hex)                                     | Key bytes (ASCII)  |
 |---------|------------------------------------------------------|--------------------|
@@ -114,10 +119,32 @@ bytes. Robot J uses the plain motor/LED headers below. (Internally the app's
 | direction | `00`=stop, `01`=D1, `02`=D2 |
 | speed     | `01`–`0C` (1–12, matches UI speeds S1–S12) |
 
+Byte-by-byte (`55 AA 03 06 01 08` → motor M1, direction D1, speed 8):
+
+```
+55 AA 03 06 01 08
+│  │  │  │  │  └─ speed      (0x08 = 8)
+│  │  │  │  └──── direction  (0x01 = D1)
+│  │  │  └─────── motor      (0x06 = M1)
+│  │  └────────── command    (0x03 = motor)
+│  └───────────── header byte 1
+└──────────────── header byte 0
+```
+
 Examples:
 - `55 AA 03 06 01 0A` → motor **M1**, direction **D1**, speed **10**
   (this is exactly what the app's built-in `Robot.test()` sends).
-- **Stop all motors**: `55 AA 03 10 00 00`.
+- **Stop all motors**: `55 AA 03 10 00 00`:
+
+```
+55 AA 03 10 00 00
+│  │  │  │  │  └─ speed      (0 = off)
+│  │  │  │  └──── direction  (0 = stop)
+│  │  │  └─────── motor      (0x10 = stop-all)
+│  │  └────────── command    (0x03 = motor)
+│  └───────────── header byte 1
+└──────────────── header byte 0
+```
 
 ### 5.2 LED
 
@@ -127,6 +154,19 @@ Examples:
 
 Two trailing zero bytes are always appended. Index selects the LED; the app
 uses index `4` as an "all LEDs" shortcut.
+
+Byte-by-byte (`55 AA 04 04 06 00 00` → all LEDs blue):
+
+```
+55 AA 04 04 06 00 00
+│  │  │  │  │  │  └─ padding    (always 0)
+│  │  │  │  │  └──── padding    (always 0)
+│  │  │  │  └─────── color      (0x06 = blue)
+│  │  │  └────────── index      (0x04 = all LEDs)
+│  │  └───────────── command    (0x04 = LED)
+│  └──────────────── header byte 1
+└─────────────────── header byte 0
+```
 
 | Color  | Value | Color  | Value |
 |--------|:-----:|--------|:-----:|
@@ -142,6 +182,18 @@ uses index `4` as an "all LEDs" shortcut.
 - Incoming **notifications** (on `0xF002`) are parsed by `Robot.onMessage`:
   - Type 2 = sensor frame. Byte index `7` equal to `2` signals **low battery**.
   - The raw frame is otherwise forwarded to the app's Scratch/JS layer.
+
+Byte-by-byte of a standard sensor notification (`55 AA 05 80 xx xx xx LL ...`):
+
+```
+55 AA 05 80 xx xx xx LL ...
+│  │  │  │  └──┴──┴──┼── payload (relayed verbatim; meaning is per-attachment)
+│  │  │  │           └── byte[7] = low-battery flag (LL: 2 = low)
+│  │  │  └─────────────── sensor mode (0x80)
+│  │  └────────────────── command (0x05 = sensor)
+│  └───────────────────── header byte 1
+└──────────────────────── header byte 0
+```
 
 This library decodes notifications via `apitor_ble.sensor.decode_notification`
 into a `SensorFrame` (also delivered through `ApitorRobot.on_sensor(...)`):
