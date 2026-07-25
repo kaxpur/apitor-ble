@@ -70,6 +70,22 @@ await robot.all_leds(Color.GREEN)        # index 4 = all
 await robot.all_leds(Color.OFF)
 ```
 
+Available colors (`Color` enum):
+
+| Name | Value |
+|--------|-------|
+| `OFF` | 0 |
+| `RED` | 1 |
+| `ORANGE` | 2 |
+| `YELLOW` | 3 |
+| `GREEN` | 4 |
+| `CYAN` | 5 |
+| `BLUE` | 6 |
+| `PURPLE` | 7 |
+| `WHITE` | 10 |
+
+Values 8 and 9 are unused; the numbering jumps from `PURPLE` (7) to `WHITE` (10).
+
 ### Notifications (sensor / status frames)
 
 Decoded frames (recommended):

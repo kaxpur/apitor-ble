@@ -21,6 +21,7 @@ from .protocol import (
     stop_all_command,
 )
 from .sensor import FrameKind, SensorFrame, decode_notification
+from .easy import Robot as EasyRobot
 try:
     from .robot import ApitorError, ApitorRobot
 except ImportError as _exc:  # bleak not installed -> protocol layer still usable
@@ -43,6 +44,7 @@ __version__ = "0.1.0"
 __all__ = [
     "ApitorRobot",
     "ApitorError",
+    "EasyRobot",
     "Motor",
     "Direction",
     "Color",

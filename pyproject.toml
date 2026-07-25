@@ -9,7 +9,7 @@ description = "Async BLE library to drive Apitor toy robots (Robot J and friends
 readme = "README.md"
 requires-python = ">=3.9"
 license = { text = "MIT" }
-authors = [{ name = "Reverse-engineered from the Apitor Kit app" }]
+authors = [{ name = "Karissa Mears" }]
 keywords = ["apitor", "bluetooth", "ble", "robot", "bleak"]
 dependencies = ["bleak>=0.21.0"]
 

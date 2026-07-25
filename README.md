@@ -24,6 +24,34 @@ See [`docs/PROTOCOL.md`](docs/PROTOCOL.md) for the byte-level details.
 pip install -e .        # library + bleak
 ```
 
+## New to programming? Start here 🤖
+
+There's a beginner-friendly API — no `async`, no Bluetooth setup, just plain
+commands. See [`docs/EASY.md`](docs/EASY.md).
+
+```python
+from apitor_ble.easy import Robot
+
+robot = Robot()            # Robot J by default; Robot(product="s") for others
+robot.connect()
+
+robot.forward(2)       # drive forward for 2 seconds
+robot.color("blue")    # make the lights blue
+robot.wait(1)
+robot.lights_off()
+
+robot.disconnect()
+```
+
+Works with every Apitor BLE kit (Robot J, S, Q, R, X, and Wheels). Driving
+directions can be calibrated per build in a few lines — see
+[Setting up a different robot](docs/EASY.md#setting-up-a-different-robot). For
+the official motor tables of every buildable model, see
+[`docs/ROBOTS.md`](docs/ROBOTS.md).
+
+**Teaching with this?** There's a classroom quickstart with lesson ideas and
+tips in [`docs/TEACHERS.md`](docs/TEACHERS.md).
+
 ## Use it in your project
 
 ```python
