@@ -10,7 +10,7 @@ pip install -e .          # installs the package + bleak
 pip install -r requirements.txt
 ```
 
-Requires Python 3.9+ and a working Bluetooth LE adapter. `bleak` supports
+Requires Python 3.10+ and a working Bluetooth LE adapter. `bleak` supports
 Windows, macOS, and Linux (BlueZ).
 
 ## Quick start

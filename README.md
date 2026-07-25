@@ -1,5 +1,10 @@
 # apitor-ble
 
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)
+![Bluetooth LE](https://img.shields.io/badge/Bluetooth-LE-0082FC.svg?logo=bluetooth&logoColor=white)
+![Tests](https://img.shields.io/badge/tests-passing-brightgreen.svg)
+
 A small, dependency-light Python library for driving **Apitor** toy robots over
 Bluetooth Low Energy — primarily **Robot J** — plus a test/demo CLI and full
 protocol documentation.
@@ -10,6 +15,14 @@ See [`docs/PROTOCOL.md`](docs/PROTOCOL.md) for the byte-level details.
 > ⚠️ Unofficial. Not affiliated with or endorsed by Apitor. For use with
 > hardware you own, for interoperability and educational purposes.
 
+## Why?
+
+Apitor doesn't publish a public Bluetooth protocol for its robots, so there's no
+official way to control them from your own code. This library fills that gap: the
+protocol was independently reverse-engineered from the official app purely for
+**interoperability** — so people can experiment, learn, teach, and build their
+own robotics projects with hardware they already own.
+
 ## Features
 
 - Async API built on [`bleak`](https://github.com/hbldh/bleak) (Windows/macOS/Linux).
@@ -18,11 +31,31 @@ See [`docs/PROTOCOL.md`](docs/PROTOCOL.md) for the byte-level details.
 - Motor control, LED control, raw frame access, and notification callbacks.
 - Pure, hardware-free protocol layer (`apitor_ble.protocol`) with unit tests.
 
+## Demo
+
+See a real robot driven straight from Python — no app required.
+
+<!-- Demo GIF goes here (e.g. keyboard driving via `python main.py drive`) -->
+
+<!-- Robot J photo goes here -->
+
 ## Install
 
+### From source
+
 ```bash
-pip install -e .        # library + bleak
+pip install -e .
 ```
+
+<!-- Once published to PyPI:
+pip install apitor-ble
+-->
+
+### Requirements
+
+- Python 3.10+
+- A Bluetooth Low Energy adapter
+- Supported on Windows, macOS, and Linux (via [`bleak`](https://github.com/hbldh/bleak))
 
 ## New to programming? Start here 🤖
 
@@ -86,21 +119,19 @@ Each layer talks only to the one below it, so you can plug in at whatever level
 you need:
 
 ```
-   Your code       →  what you write:   robot.forward(2)
-       │
-   easy.py         →  beginner API: simple, synchronous, plain English
-       │              (uses profiles.py for each robot's wheel mapping)
-       │
-   robot.py        →  async BLE driver: scan, connect, authorize, drive
-       │              motors & LEDs, notifications (decoded by sensor.py)
-       │
-   protocol.py     →  turns commands into the raw Apitor byte-frames
-       │
-   bleak           →  cross-platform Bluetooth LE library
-       │
-   Bluetooth LE    →  your computer's Bluetooth radio
-       │
-   Apitor Robot    →  Robot J / S / Q / R / X / Wheels
+Your code
+│
+├── easy.py        Beginner synchronous API  (uses profiles.py)
+│
+├── robot.py       Async BLE driver          (decodes via sensor.py)
+│
+├── protocol.py    Packet encoding
+│
+├── bleak          Bluetooth library
+│
+├── Bluetooth LE   Your computer's radio
+│
+└── Apitor Robot   Robot J / S / Q / R / X / Wheels
 ```
 
 **Beginners** start at `easy.py`. **Advanced** users can drop straight to
@@ -150,16 +181,27 @@ pytest
 
 ## Robot J at a glance
 
-```
-Service : 0000f0ff-0000-1000-8000-00805f9b34fb
-Write   : 0000f001-...   (split into 20-byte chunks)
-Notify  : 0000f002-...
-Name    : "ApitorTJ..."  (case-insensitive)
-Auth    : 55AA1120 436E354174675A4C4A7671723863447A   (send right after connect)
-Motor   : 55AA03 <port> <dir> <speed>       e.g. M1 fwd spd8 = 55AA03 06 01 08
-Stop    : 55AA03 10 00 00
-LED     : 55AA04 <index> <color> 00 00
-```
+| Item | Value | Notes |
+|--------|-------|-------|
+| Service | `0000f0ff-0000-1000-8000-00805f9b34fb` | GATT service |
+| Write | `0000f001-...` | phone → robot, split into 20-byte chunks |
+| Notify | `0000f002-...` | robot → phone |
+| Name | `ApitorTJ...` | advertised name, case-insensitive |
+| Auth | `55AA1120 436E354174675A4C4A7671723863447A` | send right after connect |
+| Motor | `55AA03 <port> <dir> <speed>` | e.g. M1 fwd spd8 = `55AA03 06 01 08` |
+| Stop | `55AA03 10 00 00` | stop all motors |
+| LED | `55AA04 <index> <color> 00 00` | index 4 = all LEDs |
+
+## Roadmap
+
+Planned future improvements:
+
+- Publish to PyPI
+- Add GitHub Actions CI
+- Add coverage reporting
+- Support additional Apitor firmware revisions
+- More example programs
+- Additional classroom resources
 
 ## Changelog
 
@@ -167,8 +209,22 @@ See [`CHANGELOG.md`](CHANGELOG.md) for release notes.
 
 ## Contributing
 
-Contributions are welcome — see [`CONTRIBUTING.md`](CONTRIBUTING.md). Calibrating
-a robot on real hardware is especially valuable.
+Contributions are welcome — see [`CONTRIBUTING.md`](CONTRIBUTING.md). Especially
+valuable:
+
+- Testing on additional robots (and calibrating them on real hardware)
+- Protocol verification
+- Documentation improvements
+- New example programs
+- Bug reports
+
+## Disclaimer
+
+This project was independently reverse-engineered for interoperability.
+
+It is not affiliated with, endorsed by, or supported by Apitor.
+
+All trademarks belong to their respective owners.
 
 ## License
 
