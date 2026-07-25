@@ -122,6 +122,15 @@ Stop    : 55AA03 10 00 00
 LED     : 55AA04 <index> <color> 00 00
 ```
 
+## Changelog
+
+See [`CHANGELOG.md`](CHANGELOG.md) for release notes.
+
+## Contributing
+
+Contributions are welcome — see [`CONTRIBUTING.md`](CONTRIBUTING.md). Calibrating
+a robot on real hardware is especially valuable.
+
 ## License
 
-MIT.
+MIT — see [`LICENSE`](LICENSE).
