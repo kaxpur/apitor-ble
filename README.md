@@ -80,6 +80,32 @@ python main.py listen      # print incoming notification frames
 python main.py drive       # keyboard-driven live control
 ```
 
+## How it fits together
+
+Each layer talks only to the one below it, so you can plug in at whatever level
+you need:
+
+```
+   Your code       →  what you write:   robot.forward(2)
+       │
+   easy.py         →  beginner API: simple, synchronous, plain English
+       │              (uses profiles.py for each robot's wheel mapping)
+       │
+   robot.py        →  async BLE driver: scan, connect, authorize, drive
+       │              motors & LEDs, notifications (decoded by sensor.py)
+       │
+   protocol.py     →  turns commands into the raw Apitor byte-frames
+       │
+   bleak           →  cross-platform Bluetooth LE library
+       │
+   Bluetooth LE    →  your computer's Bluetooth radio
+       │
+   Apitor Robot    →  Robot J / S / Q / R / X / Wheels
+```
+
+**Beginners** start at `easy.py`. **Advanced** users can drop straight to
+`robot.py` for the full async API, or to `protocol.py` to build frames by hand.
+
 ## Project layout
 
 ```
@@ -87,15 +113,28 @@ apitor-ble/
 ├── apitor_ble/
 │   ├── __init__.py        # public API
 │   ├── protocol.py        # pure byte-level protocol (no I/O)
-│   └── robot.py           # async BLE driver (bleak)
+│   ├── sensor.py          # notification / telemetry decoding
+│   ├── robot.py           # async BLE driver (bleak)
+│   ├── profiles.py        # per-robot driving profiles
+│   └── easy.py            # beginner-friendly synchronous API
 ├── main.py                # test / demo CLI
 ├── examples/
-│   └── use_in_another_project.py
+│   ├── use_in_another_project.py
+│   └── kids_first_program.py
 ├── tests/
-│   └── test_protocol.py   # hardware-free frame tests
+│   ├── test_protocol.py   # hardware-free frame tests
+│   ├── test_sensor.py     # notification decoding tests
+│   ├── test_easy.py       # easy-API helper tests
+│   └── test_profiles.py   # driving-profile tests
 ├── docs/
 │   ├── PROTOCOL.md        # reverse-engineered protocol reference
-│   └── USAGE.md           # library + CLI usage guide
+│   ├── USAGE.md           # library + CLI usage guide
+│   ├── EASY.md            # beginner guide + calibration steps
+│   ├── ROBOTS.md          # official motor tables per model
+│   └── TEACHERS.md        # classroom quickstart
+├── CHANGELOG.md
+├── CONTRIBUTING.md
+├── LICENSE
 ├── pyproject.toml
 └── requirements.txt
 ```
