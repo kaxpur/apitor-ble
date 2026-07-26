@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-07-26
+
 ### Added
 - Published to PyPI: `pip install apitor-ble`. README now shows PyPI + Python
   version badges and leads with the PyPI install.
@@ -84,6 +86,7 @@ First public release.
 - Unofficial project; not affiliated with or endorsed by Apitor. The protocol
   was reverse-engineered for interoperability with hardware you own.
 
-[Unreleased]: https://github.com/kaxpur/apitor-ble/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/kaxpur/apitor-ble/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/kaxpur/apitor-ble/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/kaxpur/apitor-ble/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/kaxpur/apitor-ble/releases/tag/v0.1.0
