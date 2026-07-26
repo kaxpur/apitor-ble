@@ -2,12 +2,14 @@
 
 ## Install
 
-From the project root:
+```bash
+pip install apitor-ble     # installs the package + bleak
+```
+
+Or from a source checkout:
 
 ```bash
-pip install -e .          # installs the package + bleak
-# or just the runtime dep:
-pip install -r requirements.txt
+pip install -e .           # editable install for development
 ```
 
 Requires Python 3.10+ and a working Bluetooth LE adapter. `bleak` supports

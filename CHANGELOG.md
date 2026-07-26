@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Published to PyPI: `pip install apitor-ble`. README now shows PyPI + Python
+  version badges and leads with the PyPI install.
+- `release.yml` workflow publishes to PyPI via Trusted Publishing (OIDC).
+
+### Changed
+- Docs use inclusive "students"/"instructors" wording instead of "kids"/
+  "grown-ups" (the library suits learners of any age). Renamed
+  `examples/kids_first_program.py` to `examples/first_program.py`.
+- Bumped GitHub Actions to current major versions (Node 24) to clear the
+  Node 20 deprecation warnings.
+
 ## [0.2.0] - 2026-07-25
 
 Packaging, tooling, and code-quality pass to make the project PyPI-ready. No

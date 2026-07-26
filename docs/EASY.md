@@ -27,10 +27,10 @@ robot.disconnect()
 ```
 
 There's a ready-to-run copy in
-[`examples/kids_first_program.py`](../examples/kids_first_program.py):
+[`examples/first_program.py`](../examples/first_program.py):
 
 ```bash
-python examples/kids_first_program.py
+python examples/first_program.py
 ```
 
 ## Steps to remember
@@ -84,7 +84,7 @@ The colors you can use are:
 robot.wait(1.5)   # do nothing for 1.5 seconds
 ```
 
-## Tips for grown-ups helping out
+## Tips for instructors and helpers
 
 - If **"forward" makes the robot go backward**, that just means the motors are
   plugged in the other way. You can swap the motor plugs, or use `backward`

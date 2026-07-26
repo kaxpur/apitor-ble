@@ -2,7 +2,7 @@
 
 Run it like this:
 
-    python examples/kids_first_program.py
+    python examples/first_program.py
 
 Make sure your Apitor Robot J is turned on and close to the computer.
 Try changing the numbers and colors and see what happens!

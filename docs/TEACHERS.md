@@ -49,7 +49,7 @@ robot.disconnect()
 
 Run it with `python my_robot.py`. Then let them change the numbers and colors.
 The full beginner reference is [EASY.md](EASY.md); a ready-to-run example is
-[`examples/kids_first_program.py`](../examples/kids_first_program.py).
+[`examples/first_program.py`](../examples/first_program.py).
 
 The commands students have:
 

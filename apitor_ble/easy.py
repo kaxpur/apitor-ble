@@ -55,7 +55,7 @@ _T = TypeVar("_T")
 
 # ---- pure helpers (no robot needed — easy to test) ------------------------- #
 
-# Friendly color names a kid might type -> the real Color value.
+# Friendly color names a student might type -> the real Color value.
 _COLORS = {
     "off": Color.OFF,
     "red": Color.RED,

@@ -1,8 +1,9 @@
 # apitor-ble
 
+[![PyPI](https://img.shields.io/pypi/v/apitor-ble.svg)](https://pypi.org/project/apitor-ble/)
+[![Python versions](https://img.shields.io/pypi/pyversions/apitor-ble.svg)](https://pypi.org/project/apitor-ble/)
 [![CI](https://github.com/kaxpur/apitor-ble/actions/workflows/ci.yml/badge.svg)](https://github.com/kaxpur/apitor-ble/actions/workflows/ci.yml)
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
-![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)
 ![Bluetooth LE](https://img.shields.io/badge/Bluetooth-LE-0082FC.svg?logo=bluetooth&logoColor=white)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Ruff](https://img.shields.io/badge/linter-ruff-D7FF64.svg)](https://github.com/astral-sh/ruff)
@@ -43,15 +44,15 @@ See a real robot driven straight from Python — no app required.
 
 ## Install
 
+```bash
+pip install apitor-ble
+```
+
 ### From source
 
 ```bash
 pip install -e .
 ```
-
-<!-- Once published to PyPI:
-pip install apitor-ble
--->
 
 ### Requirements
 
@@ -161,7 +162,7 @@ apitor-ble/
 ├── main.py                # test / demo CLI
 ├── examples/
 │   ├── use_in_another_project.py
-│   └── kids_first_program.py
+│   └── first_program.py
 ├── tests/
 │   ├── test_protocol.py   # hardware-free frame tests
 │   ├── test_sensor.py     # notification decoding tests
