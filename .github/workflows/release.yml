@@ -47,10 +47,10 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       id-token: write # required for Trusted Publishing (OIDC)
-    # If your PyPI "pending publisher" specifies an Environment name, uncomment
-    # the next two lines and set it to match (a common choice is "pypi"):
-    # environment:
-    #   name: pypi
+    # Matches the Environment name set in the PyPI pending-publisher config.
+    environment:
+      name: pypi
+      url: https://pypi.org/p/apitor-ble
     steps:
       - uses: actions/download-artifact@v4
         with:
