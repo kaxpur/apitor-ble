@@ -10,21 +10,68 @@ lines of ordinary Python and the robot moves.
 
 - One or more **Apitor robots** (Robot J, S, Q, R, X, or Wheels), charged and
   built into a driving model.
-- A computer per group with **Bluetooth** and **Python 3.9+**.
+- A computer per group with **Bluetooth** and **Python 3.10+**.
 - 10 minutes to set up once.
 
-## One-time setup
+## Installing for Python development
 
-On each computer:
+You install the library **once per computer**, from the **terminal** (not from
+inside Python). Pick the section that matches the machine.
+
+> ⚠️ **`pip` goes in the terminal, not the `>>>` prompt.** If you type
+> `pip install ...` after Python's `>>>` you'll get `SyntaxError`. Run it in the
+> Command Prompt / Terminal instead. (`import apitor_ble` is the part that goes
+> *inside* Python.)
+
+### Windows / macOS
 
 ```bash
-pip install apitor-ble        # or: pip install -e .  from a checkout
+pip install apitor-ble
+# if "pip" isn't found:  py -m pip install apitor-ble   (Windows)
+#                        python3 -m pip install apitor-ble   (macOS)
 ```
 
-Quick check that everything works (turn a robot on nearby):
+### Raspberry Pi / Linux (use a virtual environment)
+
+Debian-based systems (including Raspberry Pi OS) protect the system Python, so a
+plain `pip install` fails with **"externally-managed-environment"**. Make a
+project **virtual environment** (a private sandbox) once, and install into it:
 
 ```bash
-python -c "from apitor_ble.easy import Robot; r=Robot(); r.connect(); r.color('green'); r.wait(1); r.lights_off(); r.disconnect()"
+cd ~/my-robot-project            # your project folder
+python3 -m venv .venv            # create the sandbox (once)
+source .venv/bin/activate        # enter it — prompt shows (.venv)
+pip install apitor-ble           # now this works
+```
+
+Each new terminal, run `source .venv/bin/activate` again before working;
+`deactivate` leaves it. Add `apitor-ble` to a `requirements.txt` so students can
+recreate it with `pip install -r requirements.txt`.
+
+### Using Thonny (the default Raspberry Pi editor)
+
+Thonny works great — you do **not** need IDLE. But out of the box it runs the
+**system Python**, which won't see the library you installed into `.venv`. Point
+Thonny at your virtual environment once:
+
+1. **Tools → Options → Interpreter**
+2. Under "Which interpreter…", choose **Alternative Python 3 interpreter or
+   virtual environment**.
+3. For "Python executable", browse to your venv's Python, e.g.
+   `~/my-robot-project/.venv/bin/python3`.
+4. Click **OK**. The Shell pane restarts showing that path.
+
+Now pressing **Run (F5)** uses the venv, and `from apitor_ble.easy import Robot`
+works. (The tell-tale sign it's on the wrong interpreter: `ModuleNotFoundError:
+No module named 'apitor_ble'` even though you installed it.)
+
+### Check it works
+
+Turn a robot on nearby and run (from the terminal, or Run in Thonny):
+
+```python
+from apitor_ble.easy import Robot
+r = Robot(); r.connect(); r.color("green"); r.wait(1); r.lights_off(); r.disconnect()
 ```
 
 If the lights flash green, you're ready.
