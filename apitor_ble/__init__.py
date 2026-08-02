@@ -47,7 +47,7 @@ except ImportError as _exc:  # bleak not installed -> protocol layer still usabl
             ) from _robot_import_error
 
 
-__version__ = "0.2.1"
+__version__ = "0.3.0"
 
 __all__ = [
     # Core driver

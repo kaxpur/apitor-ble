@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-07-26
+
+### Added
+- `Robot.address` property on the easy API (and `ApitorRobot.address` on the
+  driver): the robot's Bluetooth address once connected, or `None` before.
+  Useful for reconnecting straight to the same robot with `Robot(address=...)`,
+  which skips scanning.
+- The easy `connect()` friendly message now includes the address.
+
 ## [0.2.1] - 2026-07-26
 
 ### Added
@@ -86,7 +95,8 @@ First public release.
 - Unofficial project; not affiliated with or endorsed by Apitor. The protocol
   was reverse-engineered for interoperability with hardware you own.
 
-[Unreleased]: https://github.com/kaxpur/apitor-ble/compare/v0.2.1...HEAD
+[Unreleased]: https://github.com/kaxpur/apitor-ble/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/kaxpur/apitor-ble/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/kaxpur/apitor-ble/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/kaxpur/apitor-ble/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/kaxpur/apitor-ble/releases/tag/v0.1.0

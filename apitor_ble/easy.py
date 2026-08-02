@@ -185,6 +185,15 @@ class Robot:
         if self._robot is None:
             raise RuntimeError("The robot isn't connected yet. Call robot.connect() first.")
 
+    @property
+    def address(self) -> str | None:
+        """The robot's Bluetooth address once connected, or ``None`` if not yet.
+
+        Handy for reconnecting straight to the same robot next time with
+        ``Robot(address=...)``, which skips scanning.
+        """
+        return self._robot.address if self._robot is not None else None
+
     # -- connecting ---------------------------------------------------------- #
     def connect(self, timeout: float = 10.0) -> Robot:
         """Find the robot and connect to it. Do this before anything else."""
@@ -208,7 +217,7 @@ class Robot:
             self._robot = self._run(_do_connect())
         except ApitorError as exc:
             raise RuntimeError("I couldn't find your robot. Is it turned on and nearby?") from exc
-        self._say("Connected! Your robot is ready.")
+        self._say(f"Connected! Your robot is ready. (address: {self.address})")
         if not self._profile.calibrated:
             self._say(
                 f"  (Heads up: driving directions for {self._profile.name} haven't been\n"

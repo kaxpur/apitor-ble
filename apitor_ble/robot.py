@@ -123,6 +123,11 @@ class ApitorRobot:
     def is_connected(self) -> bool:
         return self._client is not None and self._client.is_connected
 
+    @property
+    def address(self) -> str | None:
+        """The BLE address this robot is bound to (``None`` if unknown)."""
+        return self._address
+
     def on_notify(self, callback: NotifyCallback | None) -> None:
         """Register a callback for raw notification frames from the robot."""
         self._notify_cb = callback
